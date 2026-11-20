@@ -1,0 +1,30 @@
+# Secrets and keys: never commit
+.env
+.env.*
+*.key
+*.pem
+secrets/
+client-data/
+api-keys*
+
+# Private generated data
+local-index/
+logs/
+*.log
+
+# Models and environments (large, not source)
+models/
+*.gguf
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# OS and editor files
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Raw recordings can contain private information
+media/raw-recordings/
