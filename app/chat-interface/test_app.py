@@ -59,6 +59,18 @@ class TestGradioApp(unittest.TestCase):
             self.assertTrue(len(c_answer) > 0, "Conflict answer box must not be empty.")
             self.assertIn("depends on conflicting", c_answer.lower(), "Answer must state that it depends on conflicting rules.")
             self.assertTrue(len(c_banner) > 0, "Conflict banner must not be empty.")
+
+            # Assert exact source sentences appear in answer and banner
+            self.assertIn(
+                "The Marketing Director approves campaign budgets above $15,000 per month",
+                c_answer,
+                "Expected exact quote from D03 §2.2 in conflict answer box.",
+            )
+            self.assertIn(
+                "A campaign with a total budget above $10,000 requires Marketing Director sign-off before launch",
+                c_answer,
+                "Expected exact quote from D04 §2.2 in conflict answer box.",
+            )
         finally:
             print("Stopping Gradio app...")
             demo.close()

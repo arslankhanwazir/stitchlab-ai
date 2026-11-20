@@ -112,6 +112,18 @@ class TestOfflineAppWithNetworkBlocked(unittest.TestCase):
             self.assertIn("depends on conflicting", c_answer.lower())
             self.assertTrue(len(c_banner) > 0, "Expected conflict banner.")
 
+            # Assert exact source sentences appear verbatim in output
+            self.assertIn(
+                "The Marketing Director approves campaign budgets above $15,000 per month",
+                c_answer,
+                "Expected exact quote from D03 §2.2 in offline test output.",
+            )
+            self.assertIn(
+                "A campaign with a total budget above $10,000 requires Marketing Director sign-off before launch",
+                c_answer,
+                "Expected exact quote from D04 §2.2 in offline test output.",
+            )
+
             print("[Offline Test] All queries successfully answered 100% offline.")
         finally:
             print("[Offline Test] Shutting down Gradio app...")

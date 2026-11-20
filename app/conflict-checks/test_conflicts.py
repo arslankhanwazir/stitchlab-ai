@@ -64,6 +64,18 @@ class TestConflictDetection(unittest.TestCase):
         self.assertTrue("$15,000" in conflict, f"Expected $15,000 in conflict output: {conflict}")
         self.assertTrue("$10,000" in conflict, f"Expected $10,000 in conflict output: {conflict}")
 
+        # Assert exact verbatim source sentences from chunks appear in output
+        self.assertIn(
+            "The Marketing Director approves campaign budgets above $15,000 per month",
+            conflict,
+            f"Expected exact quote from D03 §2.2 in conflict output: {conflict}",
+        )
+        self.assertIn(
+            "A campaign with a total budget above $10,000 requires Marketing Director sign-off before launch",
+            conflict,
+            f"Expected exact quote from D04 §2.2 in conflict output: {conflict}",
+        )
+
         # Assert no doubled punctuation
         self.assertNotIn(".;", conflict, f"Doubled punctuation '.;' found in conflict: {conflict}")
         self.assertNotIn("..", conflict, f"Doubled punctuation '..' found in conflict: {conflict}")
