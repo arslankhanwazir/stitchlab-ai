@@ -239,3 +239,43 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Reranker passed all test questions cleanly.
+
+---
+
+## Milestone M3.3: Not-found relevance threshold
+
+### 1. Files changed
+- `app/retrieval/threshold.py` (cutoff filtering logic based on cross-encoder relevance score)
+- `app/retrieval/test_threshold.py` (unittest validating Q01-Q10 thresholding behaviour)
+- `docs/project-record/build-notes.md` (recorded threshold 0.0, score table, margin 6.9891, overfitting analysis)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: Q09 returns exactly "Not found in your documents"; Q01-Q08 still pass; Q10 still retrieves both D03 and D04.
+- **Automated test evidence (`python app/retrieval/test_threshold.py`)**:
+  ```
+  Ran 1 test in 14.702s
+  OK
+  ```
+- **Observed Scores and Filtering Results**:
+  | ID | Behaviour | Top Score | Top Chunk | Threshold Result | Retained Passages |
+  |---|---|---|---|---|---|
+  | Q01 | ANSWER | 8.3122 | D01_3 | FOUND | 2 |
+  | Q02 | ANSWER | 3.7900 | D02_5 | FOUND | 3 |
+  | Q03 | ANSWER | 8.7571 | D03_4 | FOUND | 2 |
+  | Q04 | ANSWER | 8.8434 | D04_1 | FOUND | 1 |
+  | Q05 | ANSWER | 4.2299 | D05_2 | FOUND | 1 |
+  | Q06 | ANSWER | 7.0984 | D06_4 | FOUND | 2 |
+  | Q07 | ANSWER | 8.9683 | D03_5 | FOUND | 2 |
+  | Q08 | ANSWER | 7.9239 | D07_4 | FOUND | 3 |
+  | Q09 | NOT_FOUND | -3.1991 | D02_1 | Not found in your documents. | 0 |
+  | Q10 | CONFLICT | 3.8807 | D04_2 | FOUND | 2 (D04_2: 3.8807, D03_2: 2.7661) |
+
+- **Margin & Overfitting Risk Statement**:
+  - Lowest answerable score: 3.7900 (Q02).
+  - Unanswerable score (Q09): -3.1991.
+  - Chosen threshold: `0.0`.
+  - Separation margin: `6.9891` points.
+  - Test set size statement: The evaluation suite comprises only 10 questions with 1 negative query (Q09). The threshold aligns with MS-MARCO logit 0.0 binary relevance boundary, but testing against 1 negative carries overfitting risk. Documented in `build-notes.md`.
+
+### 3. Open problems / founder decisions
+- None. Threshold rejects Q09 while retaining all evidence for Q01-Q08 and both conflicting sources (D03 and D04) for Q10.
