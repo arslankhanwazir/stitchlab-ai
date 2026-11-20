@@ -539,3 +539,30 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Guided setup screen operational.
+
+---
+
+## Milestone M6A.4: Paid API adapter (OpenAI-compatible)
+
+### 1. Files changed
+- `app/model-adapters/openai_adapter.py` (OpenAI chat completions adapter using stdlib urllib, supporting auth, quota errors, timeouts)
+- `app/model-adapters/test_openai_adapter.py` (unittest suite spawning ephemeral HTTP mock server on 127.0.0.1)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: Test asserts call succeeds against the fake server and fails gracefully without network.
+- **Automated test evidence (`python app/model-adapters/test_openai_adapter.py`)**:
+  ```
+  Ran 2 tests in 1.194s
+  OK
+  Fake OpenAI Response:
+  According to Passage 1 [D03, 4], the Account Lead signs off creative before client approval.
+  Graceful Connection Error Caught:
+  Network unreachable or provider server down: timed out
+  ```
+- **Verified capabilities**:
+  - Pure Python standard library implementation (`urllib.request`, `json`) without external SDK dependencies.
+  - Proper Bearer token authentication header and payload generation.
+  - Graceful exception mapping for `AuthenticationError` (HTTP 401), `QuotaExceededError` (HTTP 429), and network failure (`ConnectionError`).
+
+### 3. Open problems / founder decisions
+- None. Paid API adapter operational and tested against local mock.
