@@ -479,3 +479,29 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Interface operational and tested.
+
+---
+
+## Milestone M6A.2: Ollama local model adapter
+
+### 1. Files changed
+- `app/model-adapters/ollama_adapter.py` (Ollama service detection, model tag discovery, and local prompt execution adapter)
+- `app/model-adapters/test_ollama_adapter.py` (unittest testing service detection, model listing, and answer generation)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: Detect if Ollama is running, list installed models, send prompts; verified by unit tests.
+- **Automated test evidence (`python app/model-adapters/test_ollama_adapter.py`)**:
+  ```
+  Ran 4 tests in 10.658s
+  OK
+  Installed Ollama models: ['llama3.2:3b']
+  Ollama Answer:
+  According to [D02, 4, 4.2], an enterprise refund approval decision is made within 5 working days of receiving a complete request.
+  ```
+- **Verified operations**:
+  - `is_ollama_running()` correctly detected active service on `http://127.0.0.1:11434` and safely rejected inactive ports (`http://127.0.0.1:54321`).
+  - `list_installed_models()` queried `/api/tags` and confirmed presence of local `llama3.2:3b`.
+  - `get_answer(..., provider="ollama")` successfully routed query through unified adapter interface and produced grounded citation answer.
+
+### 3. Open problems / founder decisions
+- None. Ollama adapter passes all tests.
