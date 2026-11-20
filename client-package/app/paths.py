@@ -4,12 +4,16 @@ Adds app/ and each subfolder (including hyphenated folder names) to sys.path
 so modules and test scripts can import cleanly across packages.
 """
 
-import sys
-from pathlib import Path
-
+import os
 import sys
 import types
 from pathlib import Path
+
+# Enforce offline operation and disable telemetry globally
+os.environ.setdefault("ANONYMIZED_TELEMETRY", "False")
+os.environ.setdefault("GRADIO_ANALYTICS_ENABLED", "False")
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
 APP_DIR = Path(__file__).resolve().parent
 REPO_ROOT = APP_DIR.parent

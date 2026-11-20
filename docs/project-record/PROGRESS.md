@@ -375,34 +375,75 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 ## Milestone M5.1: Gradio chat interface and pipeline orchestration
 
 ### 1. Files changed
-- `app/chat-interface/pipeline.py` (orchestrates hybrid retrieval, reranking, threshold, passage cap, conflict detection, LLM generation, citation verification)
-- `app/chat-interface/app.py` (Gradio web application bound to 127.0.0.1 with permanent demo label and UI components)
-- `app/chat-interface/test_app.py` (unittest testing startup, query execution, and clean shutdown)
-- `app/paths.py` (module registration to protect app package namespace)
+- `app/chat-interface/pipeline.py` (orchestrates hybrid retrieval, reranking, threshold, passage cap, conflict detection, LLM generation, citation verification; ensures answer box states rule dependence on conflicts and is never empty)
+- `app/chat-interface/app.py` (Gradio web application bound to 127.0.0.1 with permanent demo label, conflict banner, and audit log viewer)
+- `app/chat-interface/test_app.py` (unittest testing startup, normal query execution, conflict rule dependence verification, and clean shutdown)
+- `app/chat-interface/test_offline_app.py` (unittest suite verifying offline startup with all external network traffic blocked at the socket level)
+- `app/conflict-checks/conflicts.py` (fixed doubled punctuation when joining conflict sentences with semicolon and period)
+- `app/conflict-checks/test_conflicts.py` (regression test asserting absence of doubled punctuation `.;` and `..`)
+- `app/ingestion/download_models.py` (setup script to pre-download/verify approved models in local HF cache)
+- `activate-env.ps1` (added persistent `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1` environment variables)
+- `app/paths.py` (enforced global `HF_HUB_OFFLINE=1`, `TRANSFORMERS_OFFLINE=1`, and disabled telemetry on module load)
 - `app/__init__.py` (package marker)
 
 ### 2. Done-check item by item with evidence
-- **Done-check assertion**: An automated test starts the app, sends a question, asserts an answer is returned, then stops the app.
+- **Done-check assertion**: An automated test starts the app, sends a question, asserts an answer is returned, then stops the app. Confirms offline model loading with external network blocked.
 - **Automated test evidence (`python app/chat-interface/test_app.py`)**:
   ```
   Starting Gradio app test...
   * Running on local URL:  http://127.0.0.1:7865
   Gradio app launched on http://127.0.0.1:7865.
-  Ran 1 test in 101.588s
+  Ran 1 test in 119.899s
   OK
   Returned Answer:
   According to Passage 1 [D01, 3], the steps to onboard a new client in ClickUp are:
-  3.1 Create a new Space named with th...
+  3.1 Create a new Space named with the client's legal name...
   Returned Citations: [D01, 3]
+
+  Conflict Answer Box Output:
+  The answer depends on conflicting policy rules:
+  Conflicting instructions: [D04, 2] says A campaign with a total budget above $10,000 requires written approval from the Marketing Director before launch; [D03, 2] says Campaigns with monthly spend under $15,000 may be approved by the Account Lead alone without Marketing Director sign-off per month.
+
+  Please review the conflicting policy documents above before taking action.
+  Conflict Banner Output:
+  ⚠️ **POLICY CONFLICT DETECTED**
+  ...
   Stopping Gradio app...
   Closing server running on port: 7865
   Gradio app stopped cleanly.
   ```
-- **UI elements verified**:
+- **Automated test evidence with network blocked (`python app/chat-interface/test_offline_app.py`)**:
+  ```
+  Ran 2 tests in 110.145s
+  OK
+  Could not reach the Hub (Cannot reach https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2: offline mode is enabled. To disable it, please unset the `HF_HUB_OFFLINE` environment variable.). Using cached commit hash for 'sentence-transformers/all-MiniLM-L6-v2'.
+
+  [Offline Test] Launching Gradio app with external network blocked...
+  * Running on local URL:  http://127.0.0.1:7867
+  [Offline Test] Gradio app running at http://127.0.0.1:7867 (Loopback only).
+  [Offline Test] Sending query: 'What are the steps to onboard a new client in ClickUp?'
+  Loading weights: 100%|██████████| 103/103 [00:00<00:00, 972.46it/s]
+  Could not reach the Hub (Cannot reach https://huggingface.co/api/models/cross-encoder/ms-marco-MiniLM-L-6-v2: offline mode is enabled. To disable it, please unset the `HF_HUB_OFFLINE` environment variable.). Using cached commit hash for 'cross-encoder/ms-marco-MiniLM-L-6-v2'.
+  Loading weights: 100%|██████████| 105/105 [00:00<00:00, 653.98it/s]
+  [Offline Test] Received answer in 107.23s:
+    Answer snippet: According to Passage 1 [D01, 3], the steps to onboard a new client in ClickUp are:
+  3.1 Create a new Space named with the client's legal nam...
+    Citations: [D01, 3]
+  [Offline Test] Sending conflict query: 'Does a paid social campaign with a $12,000 budget need Marketing Director approval?'
+    Conflict answer snippet: The answer depends on conflicting policy rules:
+  Conflicting instructions: [D04, 2] says A campaign with a total budget above $10,000 requires written approval from the Marketing Director before launch; [D03, 2] says Campaigns with monthly spend under $15,000 may be approved by the Account Lead alone without Marketing Director sign-off per month.
+  [Offline Test] All queries successfully answered 100% offline.
+  [Offline Test] Shutting down Gradio app...
+  Closing server running on port: 7867
+  [Offline Test] Gradio app stopped cleanly.
+  ```
+- **UI elements and fixes verified**:
   - Bound to `127.0.0.1`, `share=False`, `GRADIO_ANALYTICS_ENABLED=False`.
   - Permanent header label: `"Brightpath Media (demo), fictional"`.
   - Input box, answer display, verified citations line, conflict alert banner markdown, retrieved passage details, reset button.
   - Conflict handling: when conflict is detected, answer box explicitly states that the answer depends on conflicting policy rules and is not empty.
+  - Sentence formatting: fixed doubled punctuation (`launch.;` -> `launch;` and `per month..` -> `per month.`).
+  - Offline model loading: zero model downloads at startup; `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1` verified in `activate-env.ps1`; socket blocker test verifies complete offline operation.
   - Connection error handling: returns a friendly guidance message when Ollama is unreachable.
 
 ### 3. Open problems / founder decisions

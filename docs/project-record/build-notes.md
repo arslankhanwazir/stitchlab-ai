@@ -42,3 +42,10 @@ No manual fixes were required during extraction; all 8 source documents parsed c
   2. *Cross-document scope only*: Intentionally ignores intra-document number differences (e.g. D02 section 4.2's 5 working days for approval vs section 5.1's 10 working days for payment), which prevents false alarms on staged multi-step workflows in a single document, but means intra-document inconsistencies are not flagged.
   3. *Unit/Pattern regex bounds*: Only recognizes pre-configured numerical units (currency `$`, duration patterns). Arbitrary non-standard units or unstructured numerical metrics without patterns are not compared.
   4. *Sentence-level granularity*: Cannot synthesize multi-sentence conditionality (e.g. an exception clause located three paragraphs later).
+
+## Offline Startup Guarantee and Model Pre-downloading (M5.1)
+- **Environment variables**: `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1` are exported in `activate-env.ps1` and initialized in `app/paths.py`. Telemetry is disabled everywhere (`ANONYMIZED_TELEMETRY=False`, `GRADIO_ANALYTICS_ENABLED=False`).
+- **Pre-downloading during setup**: During initial setup, `python app/ingestion/download_models.py` caches the approved models (`sentence-transformers/all-MiniLM-L6-v2` and `cross-encoder/ms-marco-MiniLM-L-6-v2`) into `F:\stitchlab-cache\hf\hub`.
+- **Startup behavior**: When the app launches, HuggingFace and Transformers operate strictly offline against cached model weights. Zero network requests or model downloads occur at startup.
+- **Verification**: An automated test (`app/chat-interface/test_offline_app.py`) starts the Gradio app with all external network traffic intercepted and blocked at the socket level (`getaddrinfo` and `connect`), confirms zero external requests succeed, and verifies the app answers queries and detects conflicts using local models and indexes.
+
