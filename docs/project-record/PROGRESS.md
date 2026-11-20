@@ -594,3 +594,28 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Connection test logic operational and fully verified.
+
+---
+
+## Milestone M6A.6: Key handling security and external storage
+
+### 1. Files changed
+- `app/model-adapters/key_store.py` (secure key manager, memory-only by default, external persistent save to `%LOCALAPPDATA%\StitchLabAI\key.json`)
+- `app/model-adapters/test_key_store.py` (unittest asserting external persistence, out-of-repo boundary, and zero repo leakage)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: Test saves a dummy key "sk-TEST-DUMMY-0000", asserts it is in the target path, and scans git repo and logs to assert zero hits.
+- **Automated test evidence (`python app/model-adapters/test_key_store.py`)**:
+  ```
+  Ran 1 test in 0.592s
+  OK
+  External Key Path: C:\Users\tawabcomputers\AppData\Local\StitchLabAI\key.json
+  Scanned repository files. Found matches: []
+  ```
+- **Security verified**:
+  - Key path resolved to `C:\Users\tawabcomputers\AppData\Local\StitchLabAI\key.json`, located completely outside repository root `F:\stitchlab-ai`.
+  - Recursive file scan across repository source files and logs confirmed zero instances of the key.
+  - In-memory keys are held strictly in process memory and erased on demand.
+
+### 3. Open problems / founder decisions
+- None. Key storage complies with all security requirements.
