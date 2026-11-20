@@ -455,3 +455,27 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Golden test evaluation fully successful.
+
+---
+
+## Milestone M6A.1: Unified provider adapter interface
+
+### 1. Files changed
+- `app/model-adapters/base.py` (BaseModelAdapter abstract class, StubAdapter, adapter registry, unified entry point get_answer)
+- `app/model-adapters/test_base.py` (unittest suite for base adapter interface, stub responses, error handling)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: Unit tests verify the unified interface `get_answer(question, passages, provider, key)`.
+- **Automated test evidence (`python app/model-adapters/test_base.py`)**:
+  ```
+  Ran 4 tests in 0.000s
+  OK
+  ```
+- **Interface capabilities**:
+  - Abstract base interface enforcing `generate(question, passages, model, api_key, **kwargs)`.
+  - StubAdapter provides deterministic responses for offline and fast unit testing.
+  - Adapter registry supports dynamic registration of local and remote providers.
+  - Exception handling for unknown or unregistered providers.
+
+### 3. Open problems / founder decisions
+- None. Interface operational and tested.
