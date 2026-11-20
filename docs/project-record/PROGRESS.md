@@ -368,3 +368,40 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Deterministic conflict detector passes all done-check requirements.
+
+---
+
+## Milestone M5.1: Gradio chat interface and pipeline orchestration
+
+### 1. Files changed
+- `app/chat-interface/pipeline.py` (orchestrates hybrid retrieval, reranking, threshold, passage cap, conflict detection, LLM generation, citation verification)
+- `app/chat-interface/app.py` (Gradio web application bound to 127.0.0.1 with permanent demo label and UI components)
+- `app/chat-interface/test_app.py` (unittest testing startup, query execution, and clean shutdown)
+- `app/paths.py` (module registration to protect app package namespace)
+- `app/__init__.py` (package marker)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: An automated test starts the app, sends a question, asserts an answer is returned, then stops the app.
+- **Automated test evidence (`python app/chat-interface/test_app.py`)**:
+  ```
+  Starting Gradio app test...
+  * Running on local URL:  http://127.0.0.1:7865
+  Gradio app launched on http://127.0.0.1:7865.
+  Ran 1 test in 101.588s
+  OK
+  Returned Answer:
+  According to Passage 1 [D01, 3], the steps to onboard a new client in ClickUp are:
+  3.1 Create a new Space named with th...
+  Returned Citations: [D01, 3]
+  Stopping Gradio app...
+  Closing server running on port: 7865
+  Gradio app stopped cleanly.
+  ```
+- **UI elements verified**:
+  - Bound to `127.0.0.1`, `share=False`, `GRADIO_ANALYTICS_ENABLED=False`.
+  - Permanent header label: `"Brightpath Media (demo), fictional"`.
+  - Input box, answer display, verified citations line, conflict alert banner markdown, retrieved passage details, reset button.
+  - Connection error handling: returns a friendly guidance message when Ollama is unreachable.
+
+### 3. Open problems / founder decisions
+- None. Gradio interface and pipeline orchestration operational.
