@@ -505,3 +505,37 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Ollama adapter passes all tests.
+
+---
+
+## Milestone M6A.3: Guided setup screen for Ollama
+
+### 1. Files changed
+- `app/model-adapters/guided_setup.py` (Ollama status evaluation and 3-step setup guide generator)
+- `app/model-adapters/test_guided_setup.py` (unittest simulating stopped Ollama service and asserting 3 setup steps)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: If Ollama is not running, show 3 steps: 1 download, 2 run serve, 3 pull llama3.2:3b; verified by test.
+- **Automated test evidence (`python app/model-adapters/test_guided_setup.py`)**:
+  ```
+  Ran 2 tests in 1.117s
+  OK
+  ```
+- **Simulated setup screen output**:
+  ```markdown
+  ### Private Local Model Setup Required
+
+  Ollama is not currently running. To use StitchLab AI locally and privately without internet access, complete these 3 steps:
+
+  1. **Download Ollama**: Download and install Ollama from https://ollama.com/download.
+  2. **Start the Ollama Service**: Open PowerShell or Command Prompt and run: `ollama serve`.
+  3. **Pull the llama3.2:3b Model**: In a terminal window, run: `ollama pull llama3.2:3b`.
+  ```
+- **Validation breakdown**:
+  - Asserted presence of Step 1 (download link `https://ollama.com/download`).
+  - Asserted presence of Step 2 (command `ollama serve`).
+  - Asserted presence of Step 3 (command `ollama pull llama3.2:3b`).
+  - Confirmed `check_and_get_setup_instructions()` returns `None` when Ollama is running normally.
+
+### 3. Open problems / founder decisions
+- None. Guided setup screen operational.
