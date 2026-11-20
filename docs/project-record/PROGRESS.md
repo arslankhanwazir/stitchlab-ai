@@ -844,3 +844,57 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Client delivery package assembled and verified.
+
+
+---
+
+## Milestone M6A.4: Google Gemini Route via OpenAI-Compatible Endpoint
+
+### 1. Files changed
+- `app/model-adapters/openai_adapter.py` (reused OpenAIAdapter with Google Gemini base address `https://generativelanguage.googleapis.com/v1beta/openai`, dynamic user-entered model requirement, Bearer authentication, and HTTP status code mappings)
+- `app/model-adapters/netguard.py` (added `generativelanguage.googleapis.com` allowlist permitted strictly when Gemini is the chosen provider; blocked otherwise)
+- `app/model-adapters/connection_test.py` (added Gemini connection health check supporting "Connected", invalid key, no credit, model not found, and network blocked states)
+- `app/model-adapters/test_netguard.py` (added unit tests verifying `generativelanguage.googleapis.com` is allowed only when Gemini is selected and blocked under all other modes)
+- `app/model-adapters/test_gemini_adapter.py` (unit test suite using local fake server verifying Gemini base address, Bearer header, user model requirement, and connection test outcomes without a real key)
+- `app/chat-interface/pipeline.py` (updated pipeline orchestration to support provider routing, outbound NetGuard validation, PII masking, 5-passage limit, and audit logging for Gemini)
+- `app/chat-interface/app.py` (added "Google Gemini (your own API key)" to provider dropdown, model name setting with note "use a model your key can access.", privacy warning for free-tier keys, and connection testing)
+- `app/chat-interface/run_golden.py` (added `--provider gemini --model <name>` flags reading key from `GEMINI_API_KEY`)
+- `client-package/` (updated synchronized client distribution package)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: Test uses a local fake server to confirm the Gemini base address and Bearer header are sent; model name is user-provided and not hardcoded; connection test handles all error cases; Outbound NetGuard allows `generativelanguage.googleapis.com` only for Gemini; `--provider gemini --model <name>` flag added to `run_golden.py`.
+- **Automated test evidence (`python app/model-adapters/test_gemini_adapter.py`)**:
+  ```
+  Ran 5 tests in 2.687s
+  OK
+  [Test] Connection OK -> {'success': True, 'status': 'CONNECTED', 'message': 'Connected'}
+  [Test] Connection Bad Key -> {'success': False, 'status': 'INVALID_KEY', 'message': 'Invalid key: Authentication failed (HTTP 401): Invalid API key.'}
+  [Test] Connection No Credit -> {'success': False, 'status': 'NO_CREDIT', 'message': 'No credit: Rate limit or quota exceeded (HTTP 429).'}
+  [Test] Connection Model Not Found -> {'success': False, 'status': 'MODEL_NOT_FOUND', 'message': 'Model not found: Model not found (HTTP 404): {"error": {"code": 404, "message": "Model missing-model not found"}}'}
+  [Test] Connection Network Blocked -> {'success': False, 'status': 'NETWORK_BLOCKED', 'message': 'Network blocked or unreachable: Network unreachable or provider server down: [WinError 10061] No connection could be made because the target machine actively refused it'}
+  [Test] Gemini Answer:
+  According to Passage 1 [D01, 3], client onboarding follows 6 steps in ClickUp.
+  [Test] Request Path Sent: /v1beta/openai/chat/completions
+  [Test] Authorization Header: Bearer test-gemini-secret-key
+  ```
+- **NetGuard host validation (`python app/model-adapters/test_netguard.py`)**:
+  ```
+  Ran 5 tests in 0.001s
+  OK
+  ```
+  Verified: `generativelanguage.googleapis.com` is permitted when `active_provider="gemini"`, and strictly blocked under default/local mode and when other providers are active.
+- **Provider Connection Health Checks (`python app/model-adapters/test_connection_test.py`)**:
+  ```
+  Ran 4 tests in 2.649s
+  OK
+  ```
+- **Client Package Verification (`python test_client_package.py`)**:
+  ```
+  Ran 3 tests in 0.569s
+  OK
+  All 22 required files confirmed present in client-package.
+  Verified: Zero API keys or secrets detected across all client package files.
+  ```
+
+### 3. Open problems / founder decisions
+- None. Google Gemini route implemented reusing OpenAIAdapter with standard library urllib, environment variable authentication, and outbound network guard allowlisting.

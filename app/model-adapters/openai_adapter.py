@@ -1,7 +1,10 @@
 """
 M6A.4: OpenAI-compatible Paid API Adapter.
+Supports OpenAI and Google Gemini (via Gemini's OpenAI-compatible endpoint).
 Uses standard library urllib (no external SDK).
-Connects to any OpenAI-compatible /v1/chat/completions endpoint.
+Connects to:
+- OpenAI: https://api.openai.com/v1/chat/completions
+- Google Gemini: https://generativelanguage.googleapis.com/v1beta/openai/chat/completions
 """
 
 import sys
@@ -20,10 +23,11 @@ from app.citations.answer import SYSTEM_PROMPT, format_context
 
 DEFAULT_OPENAI_URL = "https://api.openai.com/v1"
 DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
+DEFAULT_GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/openai"
 
 
 class AuthenticationError(Exception):
-    """Raised when the API key is rejected or invalid (HTTP 401)."""
+    """Raised when the API key is rejected or invalid (HTTP 401 or 403)."""
     pass
 
 
@@ -32,11 +36,22 @@ class QuotaExceededError(Exception):
     pass
 
 
+class ModelNotFoundError(Exception):
+    """Raised when the specified model is not found (HTTP 404)."""
+    pass
+
+
+class NetworkBlockedError(Exception):
+    """Raised when outbound request is blocked by NetGuard or network policy."""
+    pass
+
+
 class OpenAIAdapter(BaseModelAdapter):
     """OpenAI-compatible HTTP chat completions adapter using stdlib urllib."""
 
-    def __init__(self, base_url: str = DEFAULT_OPENAI_URL):
+    def __init__(self, base_url: str = DEFAULT_OPENAI_URL, is_gemini: bool = False):
         self.base_url = base_url.rstrip("/")
+        self.is_gemini = is_gemini or ("googleapis.com" in self.base_url)
 
     def generate(
         self,
@@ -50,7 +65,14 @@ class OpenAIAdapter(BaseModelAdapter):
         if not api_key:
             raise AuthenticationError("API key is required for paid provider calls.")
 
-        target_model = model or DEFAULT_OPENAI_MODEL
+        # Gemini model name must be user-provided (do not hardcode)
+        if model and model.strip():
+            target_model = model.strip()
+        elif not self.is_gemini:
+            target_model = DEFAULT_OPENAI_MODEL
+        else:
+            raise ModelNotFoundError("Model name is required (use a model your key can access).")
+
         endpoint = f"{self.base_url}/chat/completions"
 
         context_text = format_context(passages)
@@ -83,17 +105,22 @@ class OpenAIAdapter(BaseModelAdapter):
                 return choices[0].get("message", {}).get("content", "").strip()
 
         except urllib.error.HTTPError as he:
-            if he.code == 401:
-                raise AuthenticationError(f"Authentication failed (HTTP 401): Invalid API key.") from he
+            error_body = he.read().decode("utf-8", errors="ignore")
+            if he.code in (401, 403):
+                raise AuthenticationError(f"Authentication failed (HTTP {he.code}): Invalid API key.") from he
             elif he.code == 429:
                 raise QuotaExceededError(f"Rate limit or quota exceeded (HTTP 429).") from he
+            elif he.code == 404:
+                raise ModelNotFoundError(f"Model not found (HTTP 404): {error_body}") from he
+            elif he.code == 400 and any(k in error_body.lower() for k in ["api_key_invalid", "api key not valid", "invalid api key"]):
+                raise AuthenticationError(f"Authentication failed (HTTP 400): Invalid API key.") from he
             else:
-                error_body = he.read().decode("utf-8", errors="ignore")
                 raise RuntimeError(f"API request failed with HTTP {he.code}: {error_body}") from he
 
         except urllib.error.URLError as ue:
             raise ConnectionError(f"Network unreachable or provider server down: {ue.reason}") from ue
 
 
-# Register singleton instance
-register_adapter("openai", OpenAIAdapter())
+# Register singleton instances in unified adapter registry
+register_adapter("openai", OpenAIAdapter(base_url=DEFAULT_OPENAI_URL, is_gemini=False))
+register_adapter("gemini", OpenAIAdapter(base_url=DEFAULT_GEMINI_URL, is_gemini=True))

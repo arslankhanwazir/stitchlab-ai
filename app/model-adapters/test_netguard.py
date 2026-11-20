@@ -3,8 +3,9 @@ M6B.3 Done-check Unit Test for Outbound Network Guard.
 Verifies:
 1. Allows 127.0.0.1:11434 (local Ollama).
 2. Allows active provider host (e.g. api.openai.com).
-3. Blocks arbitrary url like evil.com.
-4. Blocks loopback on wrong port like 127.0.0.1:9999.
+3. Allows generativelanguage.googleapis.com ONLY when Gemini is the chosen provider.
+4. Blocks arbitrary url like evil.com.
+5. Blocks loopback on wrong port like 127.0.0.1:9999.
 """
 
 import sys
@@ -38,6 +39,33 @@ class TestNetGuard(unittest.TestCase):
             "https://api.openai.com/v1/chat/completions",
             active_provider_host=active_host,
         )
+
+    def test_gemini_host_allowed_only_when_gemini_chosen(self):
+        gemini_url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+
+        # Allowed when Gemini is the chosen provider
+        self.assertTrue(is_url_allowed(gemini_url, active_provider="gemini"))
+        self.assertTrue(
+            is_url_allowed(
+                gemini_url,
+                active_provider="gemini",
+                active_provider_host="generativelanguage.googleapis.com",
+            )
+        )
+        validate_outbound_url(gemini_url, active_provider="gemini")
+
+        # BLOCKED when no provider is specified (e.g. local mode)
+        self.assertFalse(is_url_allowed(gemini_url))
+        with self.assertRaises(PermissionError):
+            validate_outbound_url(gemini_url)
+
+        # BLOCKED when another provider is chosen (e.g. openai or ollama)
+        self.assertFalse(is_url_allowed(gemini_url, active_provider="openai"))
+        self.assertFalse(is_url_allowed(gemini_url, active_provider="ollama"))
+        with self.assertRaises(PermissionError):
+            validate_outbound_url(gemini_url, active_provider="openai")
+        with self.assertRaises(PermissionError):
+            validate_outbound_url(gemini_url, active_provider="ollama")
 
     def test_blocks_arbitrary_urls(self):
         # Must block arbitrary external domains

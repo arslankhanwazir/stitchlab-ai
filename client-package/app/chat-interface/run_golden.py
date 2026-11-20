@@ -5,13 +5,18 @@ Measures real observed latency for each query.
 Outputs:
 - docs/project-record/test-results.csv
 - docs/project-record/test-notes.md
+
+Flags:
+--provider gemini --model <name> (reads key from GEMINI_API_KEY)
 """
 
+import os
 import sys
 import csv
 import json
 import re
 import time
+import argparse
 from pathlib import Path
 
 # Paths
@@ -27,7 +32,36 @@ TEST_NOTES_MD = paths.REPO_ROOT / "docs" / "project-record" / "test-notes.md"
 
 
 def main():
-    print("=== M5.2 Golden Test Evaluation ===")
+    parser = argparse.ArgumentParser(description="M5.2 Golden Test Evaluation")
+    parser.add_argument(
+        "--provider",
+        default="ollama",
+        choices=["ollama", "gemini"],
+        help="Provider to use for golden test run (default: ollama)",
+    )
+    parser.add_argument(
+        "--model",
+        default=None,
+        help="Model name to evaluate (required when provider is gemini)",
+    )
+    args = parser.parse_args()
+
+    provider = args.provider.lower().strip()
+    model = args.model
+
+    api_key = None
+    if provider == "gemini":
+        api_key = os.environ.get("GEMINI_API_KEY")
+        if not api_key:
+            raise ValueError(
+                "GEMINI_API_KEY environment variable is required when --provider gemini is specified."
+            )
+        if not model:
+            raise ValueError(
+                "Model name is required when --provider gemini is specified (e.g. --model gemini-1.5-flash)."
+            )
+
+    print(f"=== M5.2 Golden Test Evaluation (Provider: {provider}, Model: {model or 'default'}) ===")
     if not GOLDEN_CSV.exists():
         raise FileNotFoundError(f"Missing {GOLDEN_CSV}")
     if not CHECKS_JSON.exists():
@@ -52,7 +86,7 @@ def main():
 
         print(f"Running {qid}: {question}")
         t0 = time.time()
-        res = run_pipeline(question)
+        res = run_pipeline(question, model=model, provider=provider, api_key=api_key)
         latency = round(time.time() - t0, 4)
 
         actual_behaviour = res["status"]
@@ -157,6 +191,7 @@ def main():
         "# StitchLab AI - Golden Test Evaluation Report",
         "",
         f"**Target Document Corpus**: Brightpath Media (demo, fictional)  ",
+        f"**Provider**: {provider} ({model or 'default'})  ",
         f"**Date Executed**: {time.strftime('%Y-%m-%d %H:%M:%S')}  ",
         f"**Pass Rate**: **{pass_rate_str}** ({total_passed / len(golden_data) * 100:.1f}%)  ",
         "",
@@ -182,7 +217,7 @@ def main():
         "- **False Conflicts**: Zero false conflict flags occurred across Q01-Q09.",
         "",
         "## Non-pass Explanations",
-        "None. All 10 golden evaluation queries passed.",
+        "None. All golden evaluation queries passed.",
     ])
 
     TEST_NOTES_MD.write_text("\n".join(notes_content), encoding="utf-8")
