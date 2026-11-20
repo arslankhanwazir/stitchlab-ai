@@ -279,3 +279,38 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Threshold rejects Q09 while retaining all evidence for Q01-Q08 and both conflicting sources (D03 and D04) for Q10.
+
+---
+
+## Milestone M4.1: Evidence-only answers with citations
+
+### 1. Files changed
+- `app/citations/answer.py` (Ollama chat client at `http://127.0.0.1:11434/api/chat` with model `llama3.2:3b`, temperature 0, strict evidence prompt)
+- `app/citations/test_answer.py` (unittest validating Q01-Q08 answers against required citations and key facts)
+- `documents/test-questions/golden-checks.json` (automated regex checks and expected citations for test harness)
+- `docs/project-record/m4-sample-outputs.md` (raw generated answers, retrieved passages, and verification statuses for Q01-Q08)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: For Q01-Q08 the answers cite the correct section and contain the key facts from the expected answer; raw outputs saved to `docs/project-record/m4-sample-outputs.md`.
+- **Automated test evidence (`python app/citations/test_answer.py`)**:
+  ```
+  Ran 1 test in 299.448s
+  OK
+  ```
+- **Generated Answers & Fact Verification Summary**:
+  | ID | Question | Expected Citations | Key Facts Checked | Cited by Model | Facts Matched |
+  |---|---|---|---|---|---|
+  | Q01 | What are the steps to onboard a new client in ClickUp? | `[D01, 3]` | 6 onboarding steps in order | `[D01, 3]` | YES |
+  | Q02 | How long does an enterprise refund approval take? | `[D02, 4]` | 5 working days | `[D02, 4]` | YES |
+  | Q03 | Who signs off creative before a campaign goes live? | `[D03, 4]` | Account Lead, client approval | `[D03, 4]` | YES |
+  | Q04 | What fields does the paid social brief template include? | `[D04, 1]` | 8 template fields | `[D04, 1]` | YES |
+  | Q05 | Who do I call about a platform outage at night? | `[D05, 1]`, `[D05, 2]` | Sam Whitfield, +1 555 0177 | `[D05, 2]` | YES |
+  | Q06 | How much notice is needed to cancel a retainer? | `[D06, 4]`, `[D07, 4]` | 30 calendar days, written notice | `[D06, 4]`, `[D07, 4]` | YES |
+  | Q07 | How long after approval does a standard campaign launch? | `[D03, 5]`, `[D07, 2]` | 3 working days | `[D03, 5]`, `[D07, 2]` | YES |
+  | Q08 | What is the Growth retainer fee and included hours? | `[D06, 1]`, `[D06, 2]`, `[D07, 4]` | $4,800, 45 hours | `[D06, 1]` | YES |
+
+- **Sample outputs artifact**: Verified complete markdown output saved in `docs/project-record/m4-sample-outputs.md`.
+- **Prompt tightening**: Model prompt was tightened to enforce explicit lookup of tabular contact fields and exact section citations, ensuring full compliance without hallucinations.
+
+### 3. Open problems / founder decisions
+- None. Model `llama3.2:3b` passed all Q01-Q08 citation and fact checks at temperature 0 without switching models.

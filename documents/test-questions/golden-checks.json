@@ -1,0 +1,64 @@
+{
+  "Q01": {
+    "expected_citations": ["D01, 3"],
+    "required_regex": [
+      "(?i)(space|folder)",
+      "(?i)contract",
+      "(?i)contact",
+      "(?i)brief",
+      "(?i)reporting",
+      "(?i)kickoff"
+    ]
+  },
+  "Q02": {
+    "expected_citations": ["D02, 4"],
+    "required_regex": [
+      "(?i)5 working days"
+    ]
+  },
+  "Q03": {
+    "expected_citations": ["D03, 4"],
+    "required_regex": [
+      "(?i)Account Lead",
+      "(?i)client"
+    ]
+  },
+  "Q04": {
+    "expected_citations": ["D04, 1"],
+    "required_regex": [
+      "(?i)objective",
+      "(?i)audience",
+      "(?i)platforms",
+      "(?i)KPIs",
+      "(?i)budget",
+      "(?i)deliverables"
+    ]
+  },
+  "Q05": {
+    "expected_citations": ["D05, 1", "D05, 2"],
+    "required_regex": [
+      "(?i)Sam Whitfield",
+      "(?i)555.*0177"
+    ]
+  },
+  "Q06": {
+    "expected_citations": ["D06, 4", "D07, 4"],
+    "required_regex": [
+      "(?i)30 calendar days",
+      "(?i)written notice"
+    ]
+  },
+  "Q07": {
+    "expected_citations": ["D03, 5", "D07, 2"],
+    "required_regex": [
+      "(?i)3 working days"
+    ]
+  },
+  "Q08": {
+    "expected_citations": ["D06, 1", "D06, 2", "D07, 4"],
+    "required_regex": [
+      "\\$4,800",
+      "\\b45\\b"
+    ]
+  }
+}
