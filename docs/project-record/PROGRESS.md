@@ -773,3 +773,32 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. What-was-sent audit log operational.
+
+---
+
+## Milestone M12.1: Client delivery package assembly
+
+### 1. Files changed
+- `make_client_package.py` (packager assembling clean distribution directory `client-package/`)
+- `test_client_package.py` (automated test verifying inclusion of all 22 core files and zero leakage of forbidden files/keys)
+- `client-package/` (assembled standalone client delivery directory containing `app/`, `documents/`, `requirements.txt`, `activate-env.ps1`, `README.md`)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: Automated test verifies `client-package/` contains all required files and zero forbidden files/keys.
+- **Automated test evidence (`python test_client_package.py`)**:
+  ```
+  Ran 3 tests in 0.367s
+  OK
+  Assembling client package into: F:\stitchlab-ai\client-package
+  Client package assembled successfully.
+  Verified: Zero forbidden directories (.git, .venv, local-index, logs, pycache) or key files found.
+  All 22 required files confirmed present in client-package.
+  Verified: Zero API keys or secrets detected across all client package files.
+  ```
+- **Package verification**:
+  - `client-package/` assembled with clean production code and documentation.
+  - Complete absence of git metadata (`.git`), virtual environments (`.venv`), private indexes (`local-index/`), private logs (`logs/`), or build caches.
+  - Recursive key scan confirmed zero secrets or API key strings in the delivery package.
+
+### 3. Open problems / founder decisions
+- None. Client delivery package assembled and verified.
