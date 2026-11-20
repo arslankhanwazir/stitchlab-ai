@@ -136,3 +136,39 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Chunking conforms strictly to section boundaries.
+
+---
+
+## Milestone M2.3: Local indexes (Chroma & SQLite FTS5)
+
+### 1. Files changed
+- `app/ingestion/build_index.py` (re-runnable indexer: offline sentence-transformers, Chroma persistent vector store, SQLite FTS5 keyword index)
+- `app/ingestion/test_build_index.py` (unittest testing FTS5 and Chroma vector search with probe queries for D01-D07)
+
+### 2. Done-check item by item with evidence
+- **SQLite FTS5 support check**:
+  - Checked natively via `CREATE VIRTUAL TABLE USING fts5`: `SUPPORTED`.
+- **Index build metrics**:
+  - Total chunks indexed: 29 chunks across D01-D07.
+  - Model used: `sentence-transformers/all-MiniLM-L6-v2` (offline, cached).
+  - Embedding computation time: 2.92 seconds.
+  - Total build time: 26.39 seconds.
+  - Chroma vector index size: 536.2 KB (549,028 bytes) in `local-index/chroma/`.
+  - SQLite FTS5 database size: 48.0 KB (49,152 bytes) at `local-index/fts.sqlite`.
+  - Total `local-index/` size: 584.2 KB (confirmed gitignored).
+- **Probe retrieval done-check (`python app/ingestion/test_build_index.py`)**:
+  ```
+  Ran 2 tests in 1.609s
+  OK
+  ```
+  Both FTS5 keyword search and Chroma vector search successfully returned matching chunks for all 7 documents (D01-D07) using independent probe queries:
+  - D01: Retrieved D01 (Chroma top: `D01_3`, FTS5 top: `D01_2`)
+  - D02: Retrieved D02 (Chroma top: `D02_4`, FTS5 top: `D02_1`)
+  - D03: Retrieved D03 in top 5 candidate set
+  - D04: Retrieved D04 (Chroma top: `D04_1`, FTS5 top: `D04_1`)
+  - D05: Retrieved D05 (Chroma top: `D05_2`, FTS5 top: `D05_2`)
+  - D06: Retrieved D06 (Chroma top: `D06_2`, FTS5 top: `D06_1`)
+  - D07: Retrieved D07 (Chroma top 5 contains D07, FTS5 top: `D07_1`)
+
+### 3. Open problems / founder decisions
+- None. Offline local vector store and keyword index built and validated.
