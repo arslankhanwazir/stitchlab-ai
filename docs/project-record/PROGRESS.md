@@ -172,3 +172,35 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Offline local vector store and keyword index built and validated.
+
+---
+
+## Milestone M3.1: Hybrid search (FTS5 + Vector + RRF)
+
+### 1. Files changed
+- `app/retrieval/hybrid.py` (FTS5 BM25 search, Chroma vector search, reciprocal rank fusion with k=60, sanitized query parser)
+- `app/retrieval/test_hybrid.py` (unittest testing Q01-Q08 from `golden-tests.csv` and printing retrieval rankings)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: For Q01-Q08 from `golden-tests.csv`, a chunk from the expected document is in the top results.
+- **Automated test evidence (`python app/retrieval/test_hybrid.py`)**:
+  ```
+  Ran 1 test in 2.212s
+  OK
+  ```
+- **Observed Retrieval Results Table**:
+  | ID | Question | Expected Doc | Top Hit | Best Expected Hit | Best Rank | RRF Score |
+  |---|---|---|---|---|---|---|
+  | Q01 | What are the steps to onboard a new client in ClickUp? | D01 | D07_1 ([D07, 1]) | D01_3 | Rank 2 | 0.03252 |
+  | Q02 | How long does an enterprise refund approval take? | D02 | D02_1 ([D02, 1]) | D02_1 | Rank 1 | 0.03175 |
+  | Q03 | Who signs off creative before a campaign goes live? | D03 | D03_4 ([D03, 4]) | D03_4 | Rank 1 | 0.03279 |
+  | Q04 | What fields does the paid social brief template include? | D04 | D04_1 ([D04, 1]) | D04_1 | Rank 1 | 0.03279 |
+  | Q05 | Who do I call about a platform outage at night? | D05 | D05_2 ([D05, 2]) | D05_2 | Rank 1 | 0.03279 |
+  | Q06 | How much notice is needed to cancel a retainer? | D06 | D07_4 ([D07, 4]) | D06_4 | Rank 2 | 0.03252 |
+  | Q07 | How long after approval does a standard campaign launch? | D03 | D07_2 ([D07, 2]) | D03_5 | Rank 2 | 0.03252 |
+  | Q08 | What is the Growth retainer fee and included hours? | D06, D07 | D07_4 ([D07, 4]) | D07_4 | Rank 1 | 0.03279 |
+
+- **Sanitization check**: All punctuation in questions (`?`, `$`, `,`, `'`) is stripped in `sanitize_fts5_query()` before generating quoted terms, preventing SQLite operational syntax errors.
+
+### 3. Open problems / founder decisions
+- None. All answerable test questions retrieve target document chunks at Rank 1 or Rank 2.
