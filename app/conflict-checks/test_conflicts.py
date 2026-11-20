@@ -64,6 +64,10 @@ class TestConflictDetection(unittest.TestCase):
         self.assertTrue("$15,000" in conflict, f"Expected $15,000 in conflict output: {conflict}")
         self.assertTrue("$10,000" in conflict, f"Expected $10,000 in conflict output: {conflict}")
 
+        # Assert no doubled punctuation
+        self.assertNotIn(".;", conflict, f"Doubled punctuation '.;' found in conflict: {conflict}")
+        self.assertNotIn("..", conflict, f"Doubled punctuation '..' found in conflict: {conflict}")
+
     def test_type_2_opposite_polarity(self):
         """Verifies Type 2 conflict detection on synthetic opposite polarity instructions."""
         synthetic_passages = [

@@ -86,6 +86,13 @@ def get_token_stems(sentence: str, remove_patterns: List[re.Pattern]) -> Set[str
     return stems
 
 
+def format_conflict_statement(cit_a: str, sent_a: str, cit_b: str, sent_b: str) -> str:
+    """Formats conflict string without doubled punctuation (e.g. no '.;' or '..')."""
+    clean_a = sent_a.rstrip(".!?;, ")
+    clean_b = sent_b.rstrip(".!?;, ")
+    return f"Conflicting instructions: {cit_a} says {clean_a}; {cit_b} says {clean_b}."
+
+
 def compute_lexical_similarity(stems_a: Set[str], stems_b: Set[str]) -> float:
     """Computes Jaccard similarity between two sets of token stems."""
     if not stems_a or not stems_b:
@@ -157,9 +164,8 @@ def check_conflicts(passages: List[Dict[str, Any]]) -> Optional[str]:
                     sim = compute_lexical_similarity(stems_a, stems_b)
                     # High overlap on non-number words
                     if sim >= 0.25:
-                        return (
-                            f"Conflicting instructions: {s_a['citation']} says {text_a}; "
-                            f"{s_b['citation']} says {text_b}."
+                        return format_conflict_statement(
+                            s_a['citation'], text_a, s_b['citation'], text_b
                         )
 
             # Case 1B: Duration with same units (e.g. 5 working days vs 10 working days)
@@ -173,9 +179,8 @@ def check_conflicts(passages: List[Dict[str, Any]]) -> Optional[str]:
                     stems_b = get_token_stems(text_b, [DURATION_PATTERN])
                     sim = compute_lexical_similarity(stems_a, stems_b)
                     if sim >= 0.50:  # Require high similarity to ensure it's the exact same item
-                        return (
-                            f"Conflicting instructions: {s_a['citation']} says {text_a}; "
-                            f"{s_b['citation']} says {text_b}."
+                        return format_conflict_statement(
+                            s_a['citation'], text_a, s_b['citation'], text_b
                         )
 
             # =========================================================
@@ -195,9 +200,8 @@ def check_conflicts(passages: List[Dict[str, Any]]) -> Optional[str]:
                     stems_b = get_token_stems(text_b, [neg_re, pos_re])
                     sim = compute_lexical_similarity(stems_a, stems_b)
                     if sim >= 0.50:
-                        return (
-                            f"Conflicting instructions: {s_a['citation']} says {text_a}; "
-                            f"{s_b['citation']} says {text_b}."
+                        return format_conflict_statement(
+                            s_a['citation'], text_a, s_b['citation'], text_b
                         )
 
     return None

@@ -356,8 +356,9 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
   ```
 - **Observed Q10 Conflict Output**:
   ```
-  Conflicting instructions: [D04, 2] says A campaign with a total budget above $10,000 requires Marketing Director sign-off before launch.; [D03, 2] says The Marketing Director approves campaign budgets above $15,000 per month..
+  Conflicting instructions: [D04, 2] says A campaign with a total budget above $10,000 requires Marketing Director sign-off before launch; [D03, 2] says The Marketing Director approves campaign budgets above $15,000 per month.
   ```
+  *(Punctuation joined cleanly with `format_conflict_statement()` stripping trailing delimiters, eliminating any doubled punctuation like `.;` or `..`).*
 - **False Positive Elimination Verified**:
   - `Q01` (ClickUp onboarding) vs `Q07` (campaign launch): Different scopes and distinct vocabulary yield low lexical similarity (< 0.15); neither is flagged.
   - `Q02` (5 working days for refund approval vs 10 working days for payment): Both reside in `D02`. Cross-document rule (`doc_a != doc_b`) immediately prevents false alerting on intra-document multi-step workflows.
