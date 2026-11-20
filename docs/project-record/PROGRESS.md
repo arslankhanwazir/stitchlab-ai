@@ -337,3 +337,34 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Citation verification and sanitization logic operational.
+
+---
+
+## Milestone M4.3: Pure deterministic conflict detection
+
+### 1. Files changed
+- `app/conflict-checks/conflicts.py` (deterministic detector for Type 1 differing quantities and Type 2 opposite polarities across different documents)
+- `app/conflict-checks/test_conflicts.py` (unittest testing Q01-Q10 retrieval candidates and synthetic polarity test)
+- `docs/project-record/build-notes.md` (recorded rules and known limitations)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: Q10 flags the conflict showing both sources and both thresholds; ZERO false flags on Q01-Q09.
+- **Automated test evidence (`python app/conflict-checks/test_conflicts.py`)**:
+  ```
+  Ran 3 tests in 23.686s
+  OK
+  ```
+- **Observed Q10 Conflict Output**:
+  ```
+  Conflicting instructions: [D04, 2] says A campaign with a total budget above $10,000 requires Marketing Director sign-off before launch.; [D03, 2] says The Marketing Director approves campaign budgets above $15,000 per month..
+  ```
+- **False Positive Elimination Verified**:
+  - `Q01` (ClickUp onboarding) vs `Q07` (campaign launch): Different scopes and distinct vocabulary yield low lexical similarity (< 0.15); neither is flagged.
+  - `Q02` (5 working days for refund approval vs 10 working days for payment): Both reside in `D02`. Cross-document rule (`doc_a != doc_b`) immediately prevents false alerting on intra-document multi-step workflows.
+  - `Q03` through `Q09`: Evaluated on all retrieved candidates with zero false conflict detections.
+- **Type 2 Polarity Detection**:
+  - Synthetic test pair with opposite modal instructions (`must` vs `must not` on ad account admin access) correctly detected and formatted.
+- **Build notes updated**: Known limitations documented in `docs/project-record/build-notes.md`.
+
+### 3. Open problems / founder decisions
+- None. Deterministic conflict detector passes all done-check requirements.

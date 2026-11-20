@@ -31,3 +31,14 @@ No manual fixes were required during extraction; all 8 source documents parsed c
   - Separation margin: `6.9891` points
 - **Test Set Size & Overfitting Risk**:
   The evaluation suite contains exactly 10 questions with only 1 planted negative question (Q09). A threshold of `0.0` naturally leverages the logit decision boundary of the pre-trained MS-MARCO model (positive logits imply relevance, negative logits imply non-relevance). However, evaluating against a single negative query carries a significant risk of overfitting. While effective for the Brightpath demonstration, production deployments must calibrate against a broader distribution of out-of-domain and borderline queries.
+
+## Conflict Detection Rules and Known Limits (M4.3)
+- **Algorithm**: Pure deterministic rule-based detection without LLM calls (`app/conflict-checks/conflicts.py`).
+- **Conflict Types Supported**:
+  1. **Type 1 (Conflicting quantities/amounts)**: Detects differing numbers/amounts with matching units or currencies (`$` amounts, `working days`, `calendar days`, etc.) across sentences of DIFFERENT documents where non-numerical lexical token overlap is high (Jaccard similarity >= 0.25).
+  2. **Type 2 (Opposite polarity)**: Detects contrasting instructions (`must` vs `must not`, `required` vs `not required`, `allowed` vs `not allowed`, `can` vs `cannot`, `permitted` vs `prohibited`) across sentences of DIFFERENT documents where remaining lexical token overlap is high (Jaccard similarity >= 0.50).
+- **Known Limitations**:
+  1. *Lexical overlap dependency*: The detector relies on shared vocabulary/stems between sentences. Paraphrased conflicts expressing identical concepts with completely disjoint synonyms will be missed.
+  2. *Cross-document scope only*: Intentionally ignores intra-document number differences (e.g. D02 section 4.2's 5 working days for approval vs section 5.1's 10 working days for payment), which prevents false alarms on staged multi-step workflows in a single document, but means intra-document inconsistencies are not flagged.
+  3. *Unit/Pattern regex bounds*: Only recognizes pre-configured numerical units (currency `$`, duration patterns). Arbitrary non-standard units or unstructured numerical metrics without patterns are not compared.
+  4. *Sentence-level granularity*: Cannot synthesize multi-sentence conditionality (e.g. an exception clause located three paragraphs later).
