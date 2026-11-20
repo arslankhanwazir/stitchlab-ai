@@ -314,3 +314,26 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Model `llama3.2:3b` passed all Q01-Q08 citation and fact checks at temperature 0 without switching models.
+
+---
+
+## Milestone M4.2: Citation check in code
+
+### 1. Files changed
+- `app/citations/citation_check.py` (parser, variant normalizer, and validator for citations against retrieved passages)
+- `app/citations/test_citation_check.py` (unittest validating normalization, real citation pass, and fake citation replacement)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: A test answer with a fake citation is flagged; a real one passes.
+- **Automated test evidence (`python app/citations/test_citation_check.py`)**:
+  ```
+  Ran 3 tests in 0.002s
+  OK
+  ```
+- **Validation breakdown**:
+  - `test_normalization_variants`: Verified `[D03, 2]`, `[D03, §2]`, `[D03, Section 2.2]`, `[D03, 2.2]`, and `[D01, Sec. 3.3]` normalize to major section IDs `(D03, 2)` and `(D01, 3)`.
+  - `test_real_citations_pass`: Verified citations present in retrieved passage set pass without alteration and `all_valid=True`.
+  - `test_fake_citations_flagged_and_replaced`: Verified unretrieved or nonexistent citations (`[D99, 1]`, `[D02, 3]`) are flagged (`all_valid=False`) and safely replaced with `[INVALID CITATION: D99, 1]` and `[INVALID CITATION: D02, 3]`.
+
+### 3. Open problems / founder decisions
+- None. Citation verification and sanitization logic operational.
