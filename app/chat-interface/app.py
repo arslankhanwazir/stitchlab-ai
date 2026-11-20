@@ -39,6 +39,8 @@ def chat_respond(user_query: str) -> Tuple[str, str, str, str]:
     conflict_banner = ""
     if conflict:
         conflict_banner = f"⚠️ **POLICY CONFLICT DETECTED**\n\n{conflict}"
+        if not answer:
+            answer = f"The answer depends on conflicting policy rules:\n{conflict}"
 
     passages_details = ""
     for idx, p in enumerate(res.get("passages", []), start=1):

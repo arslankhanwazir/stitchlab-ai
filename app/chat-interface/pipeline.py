@@ -81,7 +81,7 @@ def run_pipeline(
             result["status"] = "CONFLICT"
             result["conflict"] = conflict
             result["answer"] = (
-                f"{conflict}\n\n"
+                f"The answer depends on conflicting policy rules:\n{conflict}\n\n"
                 f"Please review the conflicting policy documents above before taking action."
             )
             result["citations"] = [p.get("citation", "") for p in passages if p.get("citation")]

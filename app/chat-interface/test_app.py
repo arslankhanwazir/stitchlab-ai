@@ -50,6 +50,15 @@ class TestGradioApp(unittest.TestCase):
                 "ClickUp" in answer or "Space" in answer or "contract" in answer,
                 "Expected relevant onboarding keywords in answer.",
             )
+
+            # Test conflict question: answer box must state dependence on conflicting rules and not be empty
+            q_conflict = "Does a paid social campaign with a $12,000 budget need Marketing Director approval?"
+            c_answer, c_banner, c_citations, c_passages, c_audit = chat_respond(q_conflict)
+            print(f"\nConflict Answer Box Output:\n{c_answer}")
+            print(f"Conflict Banner Output:\n{c_banner}")
+            self.assertTrue(len(c_answer) > 0, "Conflict answer box must not be empty.")
+            self.assertIn("depends on conflicting", c_answer.lower(), "Answer must state that it depends on conflicting rules.")
+            self.assertTrue(len(c_banner) > 0, "Conflict banner must not be empty.")
         finally:
             print("Stopping Gradio app...")
             demo.close()

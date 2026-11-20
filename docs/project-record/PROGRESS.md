@@ -401,6 +401,7 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
   - Bound to `127.0.0.1`, `share=False`, `GRADIO_ANALYTICS_ENABLED=False`.
   - Permanent header label: `"Brightpath Media (demo), fictional"`.
   - Input box, answer display, verified citations line, conflict alert banner markdown, retrieved passage details, reset button.
+  - Conflict handling: when conflict is detected, answer box explicitly states that the answer depends on conflicting policy rules and is not empty.
   - Connection error handling: returns a friendly guidance message when Ollama is unreachable.
 
 ### 3. Open problems / founder decisions
