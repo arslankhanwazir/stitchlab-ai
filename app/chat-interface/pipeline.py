@@ -25,6 +25,10 @@ from threshold import MIN_RELEVANCE_SCORE, NOT_FOUND_MESSAGE
 from conflicts import check_conflicts
 from answer import generate_answer
 from citation_check import verify_and_filter_citations
+from passage_limiter import enforce_passage_limit
+from masking import mask_data, unmask_data
+from netguard import validate_outbound_url
+from audit_log import log_what_was_sent
 
 DEFAULT_MAX_PASSAGES = 5
 
@@ -67,8 +71,8 @@ def run_pipeline(
             result["latency_sec"] = round(time.time() - start_time, 4)
             return result
 
-        # Step 4: Cap passages
-        passages = reranked[:max_passages]
+        # Step 4: Cap passages (M6B.1)
+        passages = enforce_passage_limit(reranked, limit=max_passages, hard_cap=5)
         result["passages"] = passages
 
         # Step 5: Deterministic conflict detection
@@ -84,9 +88,33 @@ def run_pipeline(
             result["latency_sec"] = round(time.time() - start_time, 4)
             return result
 
-        # Step 6: LLM Answer generation
+        # Step 6: Mask PII before dispatch (M6B.2) and validate network (M6B.3)
+        validate_outbound_url("http://127.0.0.1:11434")
+        masked_passages = []
+        combined_mapping = {}
+        for p in passages:
+            p_copy = dict(p)
+            masked_text, m_map = mask_data(p.get("text", ""))
+            p_copy["text"] = masked_text
+            combined_mapping.update(m_map)
+            masked_passages.append(p_copy)
+
+        # Log what was sent (M6B.4)
+        audit_entry = log_what_was_sent(
+            question=query,
+            passages=masked_passages,
+            provider="ollama",
+            model=model,
+            endpoint="http://127.0.0.1:11434/api/chat",
+        )
+        result["what_was_sent"] = audit_entry
+
+        # Step 7: LLM Answer generation
         try:
-            raw_answer = generate_answer(query, passages, model=model)
+            raw_answer = generate_answer(query, masked_passages, model=model)
+            # Reversibly restore any masked tokens before display (M6B.2)
+            if combined_mapping:
+                raw_answer = unmask_data(raw_answer, combined_mapping)
         except ConnectionError as ce:
             result["status"] = "ERROR"
             result["error"] = str(ce)

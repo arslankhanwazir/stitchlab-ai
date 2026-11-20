@@ -39,7 +39,7 @@ class TestGradioApp(unittest.TestCase):
         try:
             # Send question through handler
             question = "What are the steps to onboard a new client in ClickUp?"
-            answer, conflict, citations, passages = chat_respond(question)
+            answer, conflict, citations, passages, audit_json = chat_respond(question)
 
             print(f"Returned Answer:\n{answer[:120]}...")
             print(f"Returned Citations: {citations}")

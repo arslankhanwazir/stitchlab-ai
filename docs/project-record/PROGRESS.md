@@ -735,3 +735,41 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Outbound network guard fully operational.
+
+---
+
+## Milestone M6B.4: What-was-sent audit log and UI expander
+
+### 1. Files changed
+- `app/model-adapters/audit_log.py` (JSONL audit logger recording exact prompt, masked passages, provider, and timestamp)
+- `app/model-adapters/test_audit_log.py` (unittest verifying log entry accuracy and zero unmasked PII leakage)
+- `app/chat-interface/pipeline.py` (integrated data masking, network validation, and what-was-sent logging into query flow)
+- `app/chat-interface/app.py` (added audit log JSON viewer under an expander accordion in the UI)
+- `app/chat-interface/test_app.py` (updated test to assert audit data returned)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: Unit test runs a query, asserts log entry matches what was sent, asserts no raw unmasked PII in the log.
+- **Automated test evidence (`python app/model-adapters/test_audit_log.py`)**:
+  ```
+  Ran 1 test in 0.023s
+  OK
+  === RECORDED AUDIT ENTRY ===
+  {
+    "timestamp": "2026-11-20T16:07:29Z",
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "endpoint": "https://api.openai.com/v1/chat/completions",
+    "question": "Who is the on-call contact for server outages?",
+    "passages_count": 1,
+    "passage_citations": ["[D05, 1]"],
+    "full_prompt_sent": "Supplied Passages:\nPassage 1 [D05, 1]:\n| Platform or server outage | [PERSON_NAME_1], Systems Lead (on-call) | [EMAIL_ADDR_1] | [PHONE_NUM_1] |\n\nQuestion: Who is the on-call contact for server outages?\n\nAnswer:"
+  }
+  Verified: Zero unmasked PII present in audit log.
+  ```
+- **Auditing verified**:
+  - Exact prompt matching: log file `logs/what-was-sent.jsonl` contains the exact structured prompt and passages dispatched.
+  - Zero raw PII in logs: `Sam Whitfield`, `+1 555 0177`, and `sam.whitfield@brightpath-demo.example` were completely masked before writing to disk.
+  - UI visibility: Gradio app exposes the exact prompt under the `"What was sent to model (Privacy & Security Audit Log)"` accordion.
+
+### 3. Open problems / founder decisions
+- None. What-was-sent audit log operational.
