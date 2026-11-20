@@ -647,3 +647,26 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Template in place for client contract execution.
+
+---
+
+## Milestone M6B.1: Passage limit and hard cap enforcement
+
+### 1. Files changed
+- `app/model-adapters/passage_limiter.py` (passage limiter enforcing default 4 and strict hard cap <= 5)
+- `app/model-adapters/test_passage_limit.py` (unittest testing default 4 limit and 10-passage input clamp to <= 5)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: Unit test passing 10 passages asserts only <= 5 are forwarded.
+- **Automated test evidence (`python app/model-adapters/test_passage_limit.py`)**:
+  ```
+  Ran 3 tests in 0.000s
+  OK
+  ```
+- **Cap verification**:
+  - Passing 10 passages with default configuration yields exactly 4 passages.
+  - Passing 10 passages requesting 10 yields strictly 5 passages (clamped by `HARD_PASSAGE_CAP = 5`).
+  - Passing 10 passages requesting 5 yields 5 passages.
+
+### 3. Open problems / founder decisions
+- None. Passage limiter operational.
