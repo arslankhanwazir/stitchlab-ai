@@ -95,3 +95,44 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Extraction is complete, verified, and lossless for structure and text.
+
+---
+
+## Milestone M2.2: Chunking knowledge base
+
+### 1. Files changed
+- `app/ingestion/chunker.py` (chunking implementation for D01-D07 by section heading)
+- `app/ingestion/test_chunker.py` (unittest suite verifying all chunk metadata fields)
+- `documents/fictional-brightpath/extracted/chunking-note.md` (chunking specification, table of document chunks, and sample chunks)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: Script asserts every chunk has `doc_id`, `section_title`, `page` key (`null` allowed and recorded), and `version` date.
+- **Automated test evidence (`python app/ingestion/test_chunker.py`)**:
+  ```
+  ...
+  ----------------------------------------------------------------------
+  Ran 3 tests in 0.024s
+
+  OK
+  ```
+- **Chunk inventory across D01-D07**:
+  - Total chunks generated: 29
+  - D01 (Client Onboarding SOP): 5 chunks (sections 1 through 5)
+  - D02 (Enterprise Refund Process): 5 chunks (sections 1 through 5)
+  - D03 (Campaign Approval Rules): 5 chunks (sections 1 through 5)
+  - D04 (Paid Social Brief Template): 3 chunks (sections 1 through 3)
+  - D05 (Escalation Contacts): 3 chunks (sections 1 through 3, table kept whole)
+  - D06 (Retainer Pricing & Cancellation): 4 chunks (sections 1 through 4, pricing table kept whole)
+  - D07 (Client FAQ): 4 chunks (sections 1 through 4)
+- **Metadata validation**:
+  - `doc_id`: matches `D01`..`D07` for all 29 chunks.
+  - `section_id`: numeric section string.
+  - `section_title`: non-empty descriptive title.
+  - `page`: `null` (None) for all chunks as recorded in build notes.
+  - `last_reviewed`: YYYY-MM-DD date parsed from headers.
+  - `version`: semantic version string.
+  - `citation`: normalized `[DocID, Section]`.
+- **Deliverable**: `documents/fictional-brightpath/extracted/chunking-note.md` generated with sample chunks (`D01_3`, `D03_2`, `D05_1`, `D06_1`).
+
+### 3. Open problems / founder decisions
+- None. Chunking conforms strictly to section boundaries.
