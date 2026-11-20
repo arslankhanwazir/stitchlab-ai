@@ -108,20 +108,22 @@ class TestOfflineAppWithNetworkBlocked(unittest.TestCase):
             print(f"[Offline Test] Sending conflict query: '{q_conflict}'")
             c_answer, c_banner, c_citations, c_passages, c_audit = chat_respond(q_conflict)
             print(f"  Conflict answer snippet: {c_answer[:140]}...")
-            self.assertTrue(len(c_answer) > 0, "Expected non-empty conflict answer.")
-            self.assertIn("depends on conflicting", c_answer.lower())
+            self.assertEqual(
+                c_answer,
+                "The answer depends on the conflicting policy rules shown above. Review both documents before acting.",
+            )
             self.assertTrue(len(c_banner) > 0, "Expected conflict banner.")
 
-            # Assert exact source sentences appear verbatim in output
+            # Assert exact source sentences appear verbatim in banner
             self.assertIn(
                 "The Marketing Director approves campaign budgets above $15,000 per month",
-                c_answer,
-                "Expected exact quote from D03 §2.2 in offline test output.",
+                c_banner,
+                "Expected exact quote from D03 §2.2 in offline test banner.",
             )
             self.assertIn(
                 "A campaign with a total budget above $10,000 requires Marketing Director sign-off before launch",
-                c_answer,
-                "Expected exact quote from D04 §2.2 in offline test output.",
+                c_banner,
+                "Expected exact quote from D04 §2.2 in offline test banner.",
             )
 
             print("[Offline Test] All queries successfully answered 100% offline.")

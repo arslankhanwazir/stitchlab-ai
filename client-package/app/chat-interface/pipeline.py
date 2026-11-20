@@ -80,10 +80,7 @@ def run_pipeline(
         if conflict:
             result["status"] = "CONFLICT"
             result["conflict"] = conflict
-            result["answer"] = (
-                f"The answer depends on conflicting policy rules:\n{conflict}\n\n"
-                f"Please review the conflicting policy documents above before taking action."
-            )
+            result["answer"] = "The answer depends on the conflicting policy rules shown above. Review both documents before acting."
             result["citations"] = [p.get("citation", "") for p in passages if p.get("citation")]
             result["latency_sec"] = round(time.time() - start_time, 4)
             return result

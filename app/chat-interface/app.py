@@ -39,8 +39,7 @@ def chat_respond(user_query: str) -> Tuple[str, str, str, str]:
     conflict_banner = ""
     if conflict:
         conflict_banner = f"⚠️ **POLICY CONFLICT DETECTED**\n\n{conflict}"
-        if not answer:
-            answer = f"The answer depends on conflicting policy rules:\n{conflict}"
+        answer = "The answer depends on the conflicting policy rules shown above. Review both documents before acting."
 
     passages_details = ""
     for idx, p in enumerate(res.get("passages", []), start=1):
@@ -106,5 +105,9 @@ def create_app() -> gr.Blocks:
 
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", "7860"))
     demo = create_app()
-    demo.launch(server_name="127.0.0.1", server_port=7860, share=False)
+    try:
+        demo.launch(server_name="127.0.0.1", server_port=port, share=False)
+    except OSError:
+        demo.launch(server_name="127.0.0.1", server_port=7861, share=False)

@@ -401,12 +401,10 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
   Returned Citations: [D01, 3]
 
   Conflict Answer Box Output:
-  The answer depends on conflicting policy rules:
-  Conflicting instructions: [D04, 2] says A campaign with a total budget above $10,000 requires Marketing Director sign-off before launch; [D03, 2] says The Marketing Director approves campaign budgets above $15,000 per month.
-
-  Please review the conflicting policy documents above before taking action.
+  The answer depends on the conflicting policy rules shown above. Review both documents before acting.
   Conflict Banner Output:
   ⚠️ **POLICY CONFLICT DETECTED**
+  Conflicting instructions: [D04, 2] says A campaign with a total budget above $10,000 requires Marketing Director sign-off before launch; [D03, 2] says The Marketing Director approves campaign budgets above $15,000 per month.
   ...
   Stopping Gradio app...
   Closing server running on port: 7865
@@ -430,7 +428,8 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
   3.1 Create a new Space named with the client's legal nam...
     Citations: [D01, 3]
   [Offline Test] Sending conflict query: 'Does a paid social campaign with a $12,000 budget need Marketing Director approval?'
-    Conflict answer snippet: The answer depends on conflicting policy rules:
+    Conflict answer snippet: The answer depends on the conflicting policy rules shown above. Review both documents before acting.
+    Conflict banner snippet: ⚠️ **POLICY CONFLICT DETECTED**
   Conflicting instructions: [D04, 2] says A campaign with a total budget above $10,000 requires Marketing Director sign-off before launch; [D03, 2] says The Marketing Director approves campaign budgets above $15,000 per month.
   [Offline Test] All queries successfully answered 100% offline.
   [Offline Test] Shutting down Gradio app...

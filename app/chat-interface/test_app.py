@@ -56,20 +56,22 @@ class TestGradioApp(unittest.TestCase):
             c_answer, c_banner, c_citations, c_passages, c_audit = chat_respond(q_conflict)
             print(f"\nConflict Answer Box Output:\n{c_answer}")
             print(f"Conflict Banner Output:\n{c_banner}")
-            self.assertTrue(len(c_answer) > 0, "Conflict answer box must not be empty.")
-            self.assertIn("depends on conflicting", c_answer.lower(), "Answer must state that it depends on conflicting rules.")
+            self.assertEqual(
+                c_answer,
+                "The answer depends on the conflicting policy rules shown above. Review both documents before acting.",
+            )
             self.assertTrue(len(c_banner) > 0, "Conflict banner must not be empty.")
 
-            # Assert exact source sentences appear in answer and banner
+            # Assert exact source sentences appear in conflict banner
             self.assertIn(
                 "The Marketing Director approves campaign budgets above $15,000 per month",
-                c_answer,
-                "Expected exact quote from D03 §2.2 in conflict answer box.",
+                c_banner,
+                "Expected exact quote from D03 §2.2 in conflict banner.",
             )
             self.assertIn(
                 "A campaign with a total budget above $10,000 requires Marketing Director sign-off before launch",
-                c_answer,
-                "Expected exact quote from D04 §2.2 in conflict answer box.",
+                c_banner,
+                "Expected exact quote from D04 §2.2 in conflict banner.",
             )
         finally:
             print("Stopping Gradio app...")
