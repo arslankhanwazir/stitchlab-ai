@@ -405,3 +405,53 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Gradio interface and pipeline orchestration operational.
+
+---
+
+## Milestone M5.2: Golden test suite execution
+
+### 1. Files changed
+- `app/chat-interface/run_golden.py` (runner executing all 10 golden evaluation questions through pipeline.py)
+- `docs/project-record/test-results.csv` (recorded real latencies, actual behaviour, citation/conflict checks for Q01-Q10)
+- `docs/project-record/test-notes.md` (detailed report, pass rate table, observations)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: `docs/project-record/test-results.csv` exists with 10 rows and real measured latencies (not estimates).
+- **Automated test evidence (`python app/chat-interface/run_golden.py`)**:
+  ```
+  === M5.2 Golden Test Evaluation ===
+  Loaded 10 test cases.
+  Running Q01: What are the steps to onboard a new client in ClickUp? -> Actual: ANSWER | Result: PASS | Latency: 44.7069s
+  Running Q02: How long does an enterprise refund approval take? -> Actual: ANSWER | Result: PASS | Latency: 22.7577s
+  Running Q03: Who signs off creative before a campaign goes live? -> Actual: ANSWER | Result: PASS | Latency: 26.8884s
+  Running Q04: What fields does the paid social brief template include? -> Actual: ANSWER | Result: PASS | Latency: 39.35s
+  Running Q05: Who do I call about a platform outage at night? -> Actual: ANSWER | Result: PASS | Latency: 45.2942s
+  Running Q06: How much notice is needed to cancel a retainer? -> Actual: ANSWER | Result: PASS | Latency: 30.887s
+  Running Q07: How long after approval does a standard campaign launch? -> Actual: ANSWER | Result: PASS | Latency: 31.4562s
+  Running Q08: What is the Growth retainer fee and included hours? -> Actual: ANSWER | Result: PASS | Latency: 26.514s
+  Running Q09: How do we request a discount on our retainer? -> Actual: NOT_FOUND | Result: PASS | Latency: 0.7972s
+  Running Q10: Does a paid social campaign with a $12,000 budget need Marketing Director approval? -> Actual: CONFLICT | Result: PASS | Latency: 0.8872s
+
+  Saved test results to F:\stitchlab-ai\docs\project-record\test-results.csv
+  Saved test notes to F:\stitchlab-ai\docs\project-record\test-notes.md
+
+  Final Pass Rate: 10/10
+  ```
+- **Observed Results Summary Table**:
+  | ID | Question | Expected | Actual | Citations | Conflict Detected | Outcome | Real Latency |
+  |---|---|---|---|---|---|---|---|
+  | Q01 | Onboard client in ClickUp | ANSWER | ANSWER | `[D01, 3]` | False | **PASS** | 44.7069s |
+  | Q02 | Enterprise refund approval time | ANSWER | ANSWER | `[D02, 4]` | False | **PASS** | 22.7577s |
+  | Q03 | Creative sign-off | ANSWER | ANSWER | `[D03, 4]` | False | **PASS** | 26.8884s |
+  | Q04 | Paid social brief fields | ANSWER | ANSWER | `[D04, 1]` | False | **PASS** | 39.3500s |
+  | Q05 | Platform outage at night | ANSWER | ANSWER | `[D05, 2]` | False | **PASS** | 45.2942s |
+  | Q06 | Retainer cancellation notice | ANSWER | ANSWER | `[D06, 4]`, `[D07, 4]` | False | **PASS** | 30.8870s |
+  | Q07 | Campaign launch post-approval | ANSWER | ANSWER | `[D03, 5]`, `[D07, 2]` | False | **PASS** | 31.4562s |
+  | Q08 | Growth retainer fee & hours | ANSWER | ANSWER | `[D06, 1]` | False | **PASS** | 26.5140s |
+  | Q09 | Discount request | NOT_FOUND | NOT_FOUND | None | False | **PASS** | 0.7972s |
+  | Q10 | $12,000 budget approval | CONFLICT | CONFLICT | `[D04, 2]`, `[D03, 2]` | True | **PASS** | 0.8872s |
+
+- **Target Achieved**: 10/10 (100.0%) pass rate across all behavioural, factual, and citation constraints.
+
+### 3. Open problems / founder decisions
+- None. Golden test evaluation fully successful.
