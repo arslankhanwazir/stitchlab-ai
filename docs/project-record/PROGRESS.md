@@ -670,3 +670,44 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Passage limiter operational.
+
+---
+
+## Milestone M6B.2: Reversible data masking (PII protection)
+
+### 1. Files changed
+- `app/model-adapters/masking.py` (regex and dictionary-based reversible data masker for emails, phones, and personnel names)
+- `app/model-adapters/test_masking.py` (unittest verifying complete masking and exact restoration on D05 escalation matrix)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: Test runs on D05 contacts table, asserts all masked, then asserts unmasking restores original.
+- **Automated test evidence (`python app/model-adapters/test_masking.py`)**:
+  ```
+  Ran 1 test in 0.002s
+  OK
+  === MAPPING TOKENS ===
+  [PERSON_NAME_1] -> Sam Whitfield
+  [PERSON_NAME_2] -> Tom Reyes
+  [PERSON_NAME_3] -> Daniel Okafor
+  [PERSON_NAME_4] -> Priya Shah
+  [EMAIL_ADDR_1] -> tom.reyes@brightpath-demo.example
+  [EMAIL_ADDR_2] -> tom.reyes@brightpath-demo.example
+  [EMAIL_ADDR_3] -> daniel.okafor@brightpath-demo.example
+  [EMAIL_ADDR_4] -> daniel.okafor@brightpath-demo.example
+  [EMAIL_ADDR_5] -> priya.shah@brightpath-demo.example
+  [EMAIL_ADDR_6] -> priya.shah@brightpath-demo.example
+  [EMAIL_ADDR_7] -> sam.whitfield@brightpath-demo.example
+  [EMAIL_ADDR_8] -> sam.whitfield@brightpath-demo.example
+  [PHONE_NUM_1] -> +1 555 0142
+  [PHONE_NUM_2] -> +1 555 0136
+  [PHONE_NUM_3] -> +1 555 0129
+  [PHONE_NUM_4] -> +1 555 0177
+  ```
+- **Masking verification**:
+  - All personnel names (`Sam Whitfield`, `Tom Reyes`, `Daniel Okafor`, `Priya Shah`) eliminated from masked output.
+  - All corporate email addresses replaced with structured reversible tokens.
+  - All phone numbers (`+1 555 0142`, `+1 555 0136`, `+1 555 0129`, `+1 555 0177`) replaced with structured tokens.
+  - `unmask_data()` asserted to return 100% byte-for-byte identical text to the original source.
+
+### 3. Open problems / founder decisions
+- None. Reversible masking operational.
