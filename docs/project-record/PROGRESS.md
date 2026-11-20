@@ -566,3 +566,31 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Paid API adapter operational and tested against local mock.
+
+---
+
+## Milestone M6A.5: Provider connection health checker
+
+### 1. Files changed
+- `app/model-adapters/connection_test.py` (health test evaluator handling authentication, quota, network errors across providers)
+- `app/model-adapters/test_connection_test.py` (unittest suite validating each distinct error condition against mock server)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: Runs a test call on provider or key change. Handles: invalid key, credit / quota, network unreachable; verified by tests.
+- **Automated test evidence (`python app/model-adapters/test_connection_test.py`)**:
+  ```
+  Ran 4 tests in 2.482s
+  OK
+  Tested 401 -> Result: {'success': False, 'status': 'INVALID_KEY', 'message': 'Authentication failed (HTTP 401): Invalid API key.'}
+  Tested 429 -> Result: {'success': False, 'status': 'QUOTA_EXCEEDED', 'message': 'Rate limit or quota exceeded (HTTP 429).'}
+  Tested Unreachable -> Result: {'success': False, 'status': 'NETWORK_ERROR', 'message': 'Network unreachable or provider server down: [WinError 10061] No connection could be made because the target machine actively refused it'}
+  Tested 200 -> Result: {'success': True, 'status': 'CONNECTED', 'message': 'Connected to OpenAI provider successfully.'}
+  ```
+- **Error mapping verification**:
+  - HTTP 401 correctly categorized as `INVALID_KEY`.
+  - HTTP 429 correctly categorized as `QUOTA_EXCEEDED`.
+  - Offline / unreachable port correctly categorized as `NETWORK_ERROR`.
+  - Successful 200 probe returns `CONNECTED`.
+
+### 3. Open problems / founder decisions
+- None. Connection test logic operational and fully verified.
