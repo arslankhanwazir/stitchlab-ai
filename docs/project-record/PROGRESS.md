@@ -711,3 +711,27 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Reversible masking operational.
+
+---
+
+## Milestone M6B.3: Outbound network guard (NetGuard)
+
+### 1. Files changed
+- `app/model-adapters/netguard.py` (strict outbound URL allowlist policy enforcer)
+- `app/model-adapters/test_netguard.py` (unittest testing local Ollama port, active provider host, arbitrary domain blocks, and loopback port blocks)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: Unit tests allow 127.0.0.1:11434, allow active provider host, block arbitrary url like evil.com, block loopback on wrong port like 127.0.0.1:9999.
+- **Automated test evidence (`python app/model-adapters/test_netguard.py`)**:
+  ```
+  Ran 4 tests in 0.001s
+  OK
+  ```
+- **Allowlist rules verified**:
+  - `http://127.0.0.1:11434/api/chat` and `http://localhost:11434/api/tags`: ALLOWED.
+  - Active provider host `api.openai.com`: ALLOWED.
+  - Arbitrary external endpoints (`http://evil.com/exfiltrate`, `https://unapproved-api.example.com`): BLOCKED (raises `PermissionError`).
+  - Loopback on unauthorized ports (`http://127.0.0.1:9999`, `http://localhost:8080/admin`): BLOCKED (raises `PermissionError`).
+
+### 3. Open problems / founder decisions
+- None. Outbound network guard fully operational.
