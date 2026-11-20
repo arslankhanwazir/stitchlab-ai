@@ -619,3 +619,31 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. Key storage complies with all security requirements.
+
+---
+
+## Milestone M6A.7: Third-party provider policies template
+
+### 1. Files changed
+- `docs/project-record/provider-policies.md` (template documenting OpenAI, Anthropic, and Google policies, all marked NOT VERIFIED)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: Template `docs/project-record/provider-policies.md` created for OpenAI, Anthropic, Google; all three marked "NOT VERIFIED".
+- **Evidence from `docs/project-record/provider-policies.md`**:
+  ```markdown
+  # Third-Party Model Provider Privacy & Security Policies
+  Status: NOT VERIFIED
+  Notice to Client: StitchLab AI does not accept terms of service, data processing agreements, or commercial terms on behalf of clients. When connecting external paid model providers, the client must directly review, execute, and accept terms with each provider under their own commercial account.
+
+  | Provider | Model Adapter | Verification Status | Client Action Required | Training on API Data (Claimed) |
+  |---|---|---|---|---|
+  | OpenAI | `openai` | **NOT VERIFIED** | Direct Client Account & DPA | Opt-out / Off by default for API |
+  | Anthropic | `anthropic` (future) | **NOT VERIFIED** | Direct Client Account & Terms | Off by default for Commercial API |
+  | Google Cloud | `gemini` (future) | **NOT VERIFIED** | Direct GCP Project & DPA | Off by default on Vertex AI |
+  ```
+- **Compliance verified**:
+  - Explicit legal statement that client signs their own terms; StitchLab does not accept terms on their behalf.
+  - Clear "NOT VERIFIED" status flags assigned to all three major commercial providers.
+
+### 3. Open problems / founder decisions
+- None. Template in place for client contract execution.
