@@ -204,3 +204,38 @@ Platform: Windows 10 Pro, Intel Core i5-6300U, 8 GB RAM, no dedicated GPU
 
 ### 3. Open problems / founder decisions
 - None. All answerable test questions retrieve target document chunks at Rank 1 or Rank 2.
+
+---
+
+## Milestone M3.2: Reranking with Cross-Encoder
+
+### 1. Files changed
+- `app/retrieval/reranker.py` (local CrossEncoder reranker using `cross-encoder/ms-marco-MiniLM-L-6-v2`)
+- `app/retrieval/test_reranker.py` (unittest comparing hybrid RRF vs cross-encoder ordering for Q01-Q08)
+
+### 2. Done-check item by item with evidence
+- **Done-check assertion**: Top chunk matches the question for the test set.
+- **Automated test evidence (`python app/retrieval/test_reranker.py`)**:
+  ```
+  Ran 1 test in 12.907s
+  OK
+  ```
+- **Comparison Table (Before vs After Reranking)**:
+  | ID | Question | Expected Source | Before (RRF Top 1) | RRF Score | After (Cross-Encoder Top 1) | CE Score | Matches Question |
+  |---|---|---|---|---|---|---|---|
+  | Q01 | What are the steps to onboard a new client in ClickUp? | D01 section 3.3 | D07_1 ([D07, 1]) | 0.03252 | D01_3 ([D01, 3]) | 8.3122 | YES |
+  | Q02 | How long does an enterprise refund approval take? | D02 section 4.2 | D02_1 ([D02, 1]) | 0.03175 | D02_5 ([D02, 5]) | 3.7900 | YES |
+  | Q03 | Who signs off creative before a campaign goes live? | D03 sections 4.1 and 4.2 | D03_4 ([D03, 4]) | 0.03279 | D03_4 ([D03, 4]) | 8.7571 | YES |
+  | Q04 | What fields does the paid social brief template include? | D04 section 1 | D04_1 ([D04, 1]) | 0.03279 | D04_1 ([D04, 1]) | 8.8434 | YES |
+  | Q05 | Who do I call about a platform outage at night? | D05 section 1 and section 2.1 | D05_2 ([D05, 2]) | 0.03279 | D05_2 ([D05, 2]) | 4.2299 | YES |
+  | Q06 | How much notice is needed to cancel a retainer? | D06 section 4.1 | D07_4 ([D07, 4]) | 0.03252 | D06_4 ([D06, 4]) | 7.0984 | YES |
+  | Q07 | How long after approval does a standard campaign launch? | D03 section 5.1 | D07_2 ([D07, 2]) | 0.03252 | D03_5 ([D03, 5]) | 8.9683 | YES |
+  | Q08 | What is the Growth retainer fee and included hours? | D06 section 1 (also D07 section 4.1) | D07_4 ([D07, 4]) | 0.03279 | D07_4 ([D07, 4]) | 7.9239 | YES |
+
+- **Performance & Accuracy observations**:
+  - The cross-encoder successfully disambiguated FAQ summary mentions from primary policy sections (e.g. promoting `D01_3` over `D07_1` for Q01, `D06_4` over `D07_4` for Q06, and `D03_5` over `D07_2` for Q07).
+  - Measured average reranking latency on CPU: 1.3647 seconds per query.
+  - Memory consumption remained well within 8 GB RAM limits; fallback was not required.
+
+### 3. Open problems / founder decisions
+- None. Reranker passed all test questions cleanly.
